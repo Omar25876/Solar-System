@@ -1,66 +1,65 @@
 name: solar workflow
 
 on: 
-    push:
-        branches:
-            - main
-            - 'feature/*'
-    workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 'feature/*'
+  workflow_dispatch:
 
 jobs: 
-    unit-testing: 
-        name: Unit Testing
-        strategy:
-            matrix:
-                node_version: [18,20]
-                operating_system: [ubuntu-latest, macos-latest]
-        
-        runs-on: ${{matrix.operating_system}}        
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4.2.2
+  unit-testing: 
+    name: Unit Testing
+    strategy:
+      matrix:
+        node_version: [18, 20]
+        operating_system: [ubuntu-latest, macos-latest]
+    
+    runs-on: ${{ matrix.operating_system }}        
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4.2.2
 
-            - name: Setup Node.js environment
-              uses: actions/setup-node@v4.4.0
-              with:
-                node-version: ${{matrix.node_version}}
+      - name: Setup Node.js ${{ matrix.node_version }}
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ matrix.node_version }}
 
-            - name: install npm
-              run: npm install
+      - name: Install Dependencies
+        run: npm install
 
-            - name: unit testing
-              run: npm test
+      - name: Run Unit Tests
+        run: npm test
 
-            - uses: actions/upload-artifact@v4
-              if: failure() || success()
-              with:
-                name: moch-test-result
-                path: test-results.xml
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mocha-test-result
+          path: test-results.xml
 
+  code-coverage: 
+    name: Code Coverage
+    runs-on: ubuntu-latest     
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4.2.2
 
-                
-    code-coverage: 
-        name: Unit Testing
-        
-        runs-on: ubuntu-latest     
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4.2.2
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 20
 
-            - name: Setup Node.js environment
-              uses: actions/setup-node@v4.4.0
-              with:
-                node-version: 20
+      - name: Install Dependencies
+        run: npm install
 
-            - name: install npm
-              run: npm install
+      - name: Run Coverage Tests
+        run: npm run coverage
 
-            - name: unit testing 
-              run: npm run coverage
-
-            - uses: actions/upload-artifact@v4
-              if: failure() || success()
-              with:
-                name: code-coverage-test-result
-                path: coverage
-                retention-days: 5
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: code-coverage-test-result
+          path: coverage
+          retention-days: 5
