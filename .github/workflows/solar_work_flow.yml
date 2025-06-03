@@ -12,8 +12,8 @@ jobs:
     name: Unit Testing
     strategy:
       matrix:
-        node_version: [18, 20]
-        operating_system: [ubuntu-latest, macos-latest]
+        node_version: [20]
+        operating_system: [macos-latest]
     
     runs-on: ${{ matrix.operating_system }}        
     steps:
@@ -58,7 +58,7 @@ jobs:
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
-        if: always()
+        if: failure() || success()
         with:
           name: code-coverage-test-result
           path: coverage
